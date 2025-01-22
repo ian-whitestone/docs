@@ -50,7 +50,7 @@
     "name": "Get Started",
     "type": "link",
     "url": "https://select.dev/get-started",
-    "arrow": false,
+    "arrow": true,
     "style": "pill"
   },
   "topAnchor": {
