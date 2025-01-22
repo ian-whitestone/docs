@@ -1,91 +1,176 @@
 {
-  "$schema": "https://mintlify.com/schema.json",
   "name": "SELECT",
   "logo": {
-    "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
   },
+  "layout": "topnav",
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#0B0C14",
-    "light": "#07C983",
+    "primary": "#0Ca6E9",
+    "light": "#0Ca6E9",
     "dark": "#0B0C14",
-    "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
+    "background": {
+      "dark": "#0B0C14",
+      "light": "#F9FAFB"
     }
+  },
+  "background": {
+    "style": "windows"
+  },
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": false
   },
   "topbarLinks": [
     {
-      "name": "Support",
-      "url": "mailto:hi@mintlify.com"
-    }
-  ],
-  "topbarCtaButton": {
-    "name": "Dashboard",
-    "url": "https://select.dev"
-  },
-  "tabs": [
+      "name": "Book a Demo",
+      "url": "https://select.dev/demo"
+    },
     {
-      "name": "API Reference",
-      "url": "api-reference"
+      "name": "Contact Support",
+      "url": "mailto:support@select.dev"
+    },
+    {
+      "name": "Login",
+      "url": "https://select.dev/login"
     }
   ],
+  "theme": "prism",
+  "topbar": {
+    "style": "default"
+  },
+  "codeBlock": {
+    "style": "dark"
+  },
+  "sidebar": {
+    "items": "border"
+  },
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "type": "link",
+    "url": "https://select.dev/get-started",
+    "arrow": true,
+    "style": "pill"
+  },
+  "topAnchor": {
+      "name": "Documentation",
+      "icon": "book-open",
+      "iconType": "duotone"
+  },
   "anchors": [
     {
-      "name": "Documentation",
-      "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
+      "name": "Book a Demo",
+      "icon": "calendar",
+      "color": "#0Ca6E9",
+      "url": "mailto:support@select.dev"
     },
     {
-      "name": "Community",
-      "icon": "slack",
-      "url": "https://mintlify.com/community"
+      "name": "Contact Support",
+      "color": "#0Ca6E9",
+      "icon": "rectangle-terminal",
+      "url": "mailto:support@select.dev"
     },
     {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://mintlify.com/blog"
+      "name": "Changelog",
+      "color": "#0Ca6E9",
+      "icon": "comments",
+      "url": "mailto:support@select.dev"
     }
   ],
+  "tabs": [
+      {
+          "name": "Changelog",
+          "url": "https://select.dev/posts"
+      },
+      {
+          "name": "Blog",
+          "url": "https://select.dev/posts"
+      },
+      {
+          "name": "Snowflake Developer Guide",
+          "url": "https://your-website.com/blog"
+      },
+      {
+        "name": "dbt-snowflake-monitoring",
+        "url": "https://your-website.com/blog"
+    }
+  ],
+  "primaryTab": {
+      "name": "Documentation"
+  },
   "navigation": [
     {
-      "group": "Get Started",
-      "pages": [
-        "introduction",
-        "quickstart",
-        "development"
-      ]
+      "group": "Setup Guide",
+      "pages": ["introduction", "quickstart"]
     },
     {
-      "group": "Essentials",
+      "group": "Using SELECT",
       "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
-      ]
+          "essentials/code", 
+          "essentials/images",
+          {
+            "group": "Monitors",
+            "icon": "bell",
+            "pages": ["essentials/images", "essentials/images"]
+        }
+        ]
     },
     {
-      "group": "API Documentation",
-      "pages": [
-        "api-reference/introduction"
-      ]
+      "group": "Integrations",
+      "pages": ["essentials/code", "essentials/images"]
     },
     {
-      "group": "Endpoint Examples",
-      "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
-      ]
+      "group": "Analytics",
+      "pages": ["essentials/code", "essentials/images"]
     }
   ],
-  "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://www.linkedin.com/company/mintsearch"
+  "search": {
+    "location": "side"
+  },
+
+
+"footer": {
+  "socials": { 
+      "x": "https://x.com/mintlify", 
+      "website": "https://select.dev", 
+      "github": "https://github.com/get-select",
+      "linkedin": "https://www.linkedin.com/company/get-select",
+      "youtube": "https://www.youtube.com/@SELECT-dev"
+    },
+  "links": [
+    {
+      "title": "Product",
+      "links": [
+        { "label": "Column 1 Link 1", "url": "https://mintlify.com" },
+        { "label": "Column 1 Link 2", "url": "https://mintlify.com" }
+      ]
+    },
+    {
+      "title": "Resources",
+      "links": [
+        { "label": "Column 1 Link 1", "url": "https://mintlify.com" },
+        { "label": "Column 1 Link 2", "url": "https://mintlify.com" }
+      ]
+    },
+    {
+      "title": "Legal",
+      "links": [
+        { "label": "Column 1 Link 1", "url": "https://mintlify.com" },
+        { "label": "Column 1 Link 2", "url": "https://mintlify.com" }
+      ]
+    },
+    {
+      "title": "Blog",
+      "links": [
+        { "label": "Column 2 Link 1", "url": "https://mintlify.com" },
+        { "label": "Column 2 Link 2", "url": "https://mintlify.com" }
+      ]
+    }
+  ]
+},
+  "integrations": {
+    "intercom": "APP_ID",
+    "frontchat": "CHAT_ID"
   }
 }
