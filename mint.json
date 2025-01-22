@@ -63,25 +63,21 @@
       "name": "Book a Demo",
       "icon": "calendar",
       "color": "#0Ca6E9",
+      "iconType": "solid",
       "url": "mailto:support@select.dev"
     },
     {
       "name": "Contact Support",
       "color": "#0Ca6E9",
-      "icon": "rectangle-terminal",
-      "url": "mailto:support@select.dev"
-    },
-    {
-      "name": "Changelog",
-      "color": "#0Ca6E9",
-      "icon": "comments",
+      "icon": "envelope",
+      "iconType": "solid",
       "url": "mailto:support@select.dev"
     }
   ],
   "tabs": [
       {
           "name": "Changelog",
-          "url": "https://select.dev/posts"
+          "url": "/changelog/index"
       },
       {
           "name": "Blog",
@@ -92,9 +88,10 @@
           "url": "https://your-website.com/blog"
       },
       {
-        "name": "dbt-snowflake-monitoring",
-        "url": "https://your-website.com/blog"
-    }
+        "name": "Free Tools",
+        "url": "https://your-website.com/blog",
+        "isDefaultHidden": true
+      }
   ],
   "primaryTab": {
       "name": "Documentation"
@@ -121,7 +118,7 @@
       "pages": ["essentials/code", "essentials/images"]
     },
     {
-      "group": "Analytics",
+      "group": "Resources",
       "pages": ["essentials/code", "essentials/images"]
     }
   ],
