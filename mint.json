@@ -50,7 +50,7 @@
     "name": "Get Started",
     "type": "link",
     "url": "https://select.dev/get-started",
-    "arrow": true,
+    "arrow": false,
     "style": "pill"
   },
   "topAnchor": {
@@ -77,7 +77,7 @@
   "tabs": [
       {
           "name": "Changelog",
-          "url": "/changelog/index"
+          "url": "changelog"
       },
       {
           "name": "Blog",
@@ -100,6 +100,10 @@
     {
       "group": "Setup Guide",
       "pages": ["introduction", "quickstart"]
+    },
+    {
+      "group": "Changelog",
+      "pages": ["changelog/overview"]
     },
     {
       "group": "Using SELECT",
