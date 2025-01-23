@@ -53,14 +53,14 @@
   "anchors": [
     {
       "name": "Book a Demo!",
-      "color": "#F9FAFB",
+      "color": "#0Ca6E9",
       "icon": "calendar",
       "iconType": "solid",
       "url": "mailto:support@select.dev"
     },
     {
       "name": "Contact Support",
-      "color": "#F9FAFB",
+      "color": "#0Ca6E9",
       "icon": "envelope",
       "iconType": "solid",
       "url": "mailto:support@select.dev"
@@ -113,11 +113,11 @@
           "posts/overview",
           {
             "group": "2025",
-            "pages": ["changelog/lineage-changelog"]
+            "pages": ["posts/lineage-changelog"]
           },
           {
             "group": "2024",
-            "pages": ["changelog/2024-12-16"]
+            "pages": ["posts/2024-12-16"]
           }
       ]
     },
