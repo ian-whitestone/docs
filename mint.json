@@ -4,7 +4,7 @@
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
-  "layout": "topnav",
+  "layout": "sidenav",
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#0Ca6E9",
@@ -16,21 +16,13 @@
     }
   },
   "background": {
-    "style": "windows"
+    "style": "gradient"
   },
   "modeToggle": {
     "default": "dark",
     "isHidden": false
   },
   "topbarLinks": [
-    {
-      "name": "Book a Demo",
-      "url": "https://select.dev/demo"
-    },
-    {
-      "name": "Contact Support",
-      "url": "mailto:support@select.dev"
-    },
     {
       "name": "Login",
       "url": "https://select.dev/login"
@@ -61,14 +53,14 @@
   "anchors": [
     {
       "name": "Book a Demo!",
+      "color": "#F9FAFB",
       "icon": "calendar",
-      "color": "#0Ca6E9",
       "iconType": "solid",
       "url": "mailto:support@select.dev"
     },
     {
       "name": "Contact Support",
-      "color": "#0Ca6E9",
+      "color": "#F9FAFB",
       "icon": "envelope",
       "iconType": "solid",
       "url": "mailto:support@select.dev"
@@ -81,7 +73,7 @@
       },
       {
           "name": "Blog",
-          "url": "https://select.dev/posts"
+          "url": "posts"
       },
       {
           "name": "Snowflake Developer Guide",
@@ -103,7 +95,31 @@
     },
     {
       "group": "Changelog",
-      "pages": ["changelog/overview"]
+      "pages": [
+          "changelog/overview",
+          {
+            "group": "2025",
+            "pages": ["changelog/lineage-changelog"]
+          },
+          {
+            "group": "2024",
+            "pages": ["changelog/2024-12-16"]
+          }
+      ]
+    },
+    {
+      "group": "Blog",
+      "pages": [
+          "posts/overview",
+          {
+            "group": "2025",
+            "pages": ["changelog/lineage-changelog"]
+          },
+          {
+            "group": "2024",
+            "pages": ["changelog/2024-12-16"]
+          }
+      ]
     },
     {
       "group": "Using SELECT",
