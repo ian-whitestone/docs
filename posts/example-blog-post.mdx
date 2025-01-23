@@ -1,0 +1,130 @@
+---
+title: 'Effective Filtering of Window Functions With Snowflake QUALIFY'
+description: 'In this post, Jeff covers how to use the Qualify statement in Snowflake.'
+---
+
+# What is Qualify in Snowflake?
+
+The qualify clause in Snowflake, or generally in SQL, enables filtering based on the result of a window function.  A window function cannot be used in the `where` clause directly, so use `qualify` instead when you need to filter on window functions.
+
+## A Fast Refresher on Window Functions
+
+A window function is a function that operates on a set of rows in relation to the current row.  They are often used to calculate ranks, running totals, moving averages, count by partitions, etc.  Whenever you need to reference the rows above or below the current row, you need a window function.  And the qualify clause is just a shortcut to filtering on a window function.
+
+## Qualify Syntax
+
+Syntax is as follows:
+
+```sql
+SELECT <column_list>
+FROM <data_source>
+where <conditions>
+[GROUP BY ...]
+[HAVING ...]
+QUALIFY  <predicate>
+ORDER BY
+```
+
+You can see that `qualify` comes at the end of the SQL query, right before the optional `order by` clause.
+
+# Example 1: Finding the Top Sales Rep
+
+Based on the data below, let’s try to answer two business questions.
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/87a36d18-544b-42d1-9b48-ac8ec7e115af/337ee960-abad-4657-96c6-22686ce72acb/image.png)
+
+1. Who is the top sales rep in each region each day?
+
+```sql
+select salesperson_id, region, sales_amount, sales_date
+from sales
+qualify row_number() over (partition by region, sales_date order by sales_amount desc) = 1
+```
+
+Snowflake will return the highlighted rows:
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/87a36d18-544b-42d1-9b48-ac8ec7e115af/8ddf4c13-1a1e-4b59-bb0d-c4e8890ed237/image.png)
+
+1. Who is the top sales rep for each day?
+
+```sql
+select salesperson_id, region, sales_amount, sales_date
+from sales
+qualify row_number() over (partition by sales_date order by sales_amount desc) = 1
+```
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/87a36d18-544b-42d1-9b48-ac8ec7e115af/e2cab423-804d-4816-9bfe-e9d2348856eb/image.png)
+
+**Quick tip:** Alias reuse works with the qualify clause!  If you have the need to actually select the window function and not just filter on it, you can re-use the window function alias.
+
+```sql
+select salesperson_id, region, sales_amount, sales_date,
+row_number() over (partition by sales_date order by sales_amount desc) sales_date_rank
+from sales
+qualify sales_date_rank = 1
+```
+
+## Example 2: Finding Duplicate Records
+
+Using the `qualify` clause is the fastest way to find which records are causing a unique test in dbt to fail, or isolate duplicates based on a combination of columns.
+
+Let’s say you have a column called `id` that is tested for uniqueness and that test fails.  You want analyze all of the duplicate records, with the duplicates sorted together.
+
+The fastest way to select all of the records from the failed test is this:
+
+```sql
+select * from my_table
+qualify count(*) over (partition by id) > 1
+order by id
+```
+
+## Why is Qualify Useful? It is a Shortcut!
+
+Let’s look at alternative ways to solve the duplicate records query.
+
+Option 1:
+
+```sql
+-- use CTE with Group By instead
+with duplicates as
+(
+	select id group by 1 
+	having count(*) > 1
+)
+select *
+from 
+my_table join
+duplicates using (id);
+```
+
+Option 2
+
+```sql
+-- use CTE to create a window function, then fitler on the window function
+with window_count as
+(
+	select *, count(*) over (partition by id) as id_count
+	from my_table
+)
+select * exclude (id_count) 
+from window_count
+where id_count > 1;
+```
+
+There are a few more ways we can solve this same question, but none of them are as quick and easy as using the `qualify` clause.
+
+Key Takeaway: The main point of the `qualify` clause is it eliminates the need for a CTE when filtering on a window function.  Since window functions cannot be used directly in the `where` clause, they would require a CTE for filtering if the `qualify` clause did not exist.
+
+## What is the difference between WHERE and Qualify in Snowflake?
+
+We have already covered that `qualify` filters a window function and cannot be used in the where clause, but let’s dive deeper into the SQL order of operations.
+
+This is the order in which Snowflake will process your `select` statement:
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/87a36d18-544b-42d1-9b48-ac8ec7e115af/a8da667f-cefc-4640-b45d-3b77269803c0/image.png)
+
+It is important to note that any filtering in the `from` and `where` clause happen before any filtering in `qualify`.  Also, any aggregation and aggregate filtering (`group by` and `having`) come before this as well.
+
+## Wrapping Up
+
+Once again, the `qualify` clause in Snowflake is really just a shortcut that eliminates CTEs and sub-queries when you want to filter on a window function.  I use this almost every day in my daily work for analyzing duplicates, removing duplicates (`qualify row_number() … = 1` ), or advanced analytics scenarios.

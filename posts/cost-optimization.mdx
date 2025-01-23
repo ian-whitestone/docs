@@ -1,0 +1,47 @@
+---
+title: 'Snowflake Cost Optimization: 15 proven strategies for reducing costs'
+description: 'Welcome to the home of your new documentation'
+sidebarTitle: "Cost Optimization Tips"
+---
+
+import { Author, FullAuthor } from '/snippets/author.mdx';
+
+<Author 
+    name={'Ian Whitestone'} 
+    title={'Lead Data Engineer at Tietoevry'} 
+    imageSrc={"https://select.dev/_next/static/media/niall.eddbb0cb.jpg"} 
+/>
+
+
+# What is Qualify in Snowflake?
+
+The qualify clause in Snowflake, or generally in SQL, enables filtering based on the result of a window function.  A window function cannot be used in the `where` clause directly, so use `qualify` instead when you need to filter on window functions.
+
+## A Fast Refresher on Window Functions
+
+A window function is a function that operates on a set of rows in relation to the current row.  They are often used to calculate ranks, running totals, moving averages, count by partitions, etc.  Whenever you need to reference the rows above or below the current row, you need a window function.  And the qualify clause is just a shortcut to filtering on a window function.
+
+## Qualify Syntax
+
+Syntax is as follows:
+
+```sql
+SELECT <column_list>
+FROM <data_source>
+where <conditions>
+[GROUP BY ...]
+[HAVING ...]
+QUALIFY  <predicate>
+ORDER BY
+```
+
+You can see that `qualify` comes at the end of the SQL query, right before the optional `order by` clause.
+
+
+
+<FullAuthor
+    name="Ian Whitestone"
+    title="Co-founder & CEO of SELECT"
+    description="Ian is the Co-founder & CEO of SELECT, a SaaS Snowflake cost management and optimization platform. Prior to starting SELECT, Ian spent 6 years leading full stack data science & engineering teams at Shopify and Capital One. At Shopify, Ian led the efforts to optimize their data warehouse and increase cost observability."
+    imageSrc="https://select.dev/_next/static/media/ian.a8042ba3.jpg"
+/>

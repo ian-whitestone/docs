@@ -1,0 +1,99 @@
+export const OldAuthor = ({ name, title }) => (
+  <div>
+    <h1>{name}</h1>
+    <p>... {title} ...</p>
+  </div>
+);
+            
+export const Author = ({ name, title, imageSrc }) => (
+    <div style={{ display: "flex", alignItems: "center", fontWeight: "500", marginTop: "-2rem" }}>
+        <img 
+            alt="" 
+            fetchpriority="high" 
+            width="118" 
+            height="118" 
+            decoding="async" 
+            data-nimg="1" 
+            style={{
+                marginRight: "0.75rem",
+                height: "2.5rem",
+                width: "2.5rem",
+                borderRadius: "9999px",
+                color: "transparent"
+            }} 
+            src={imageSrc}
+        />
+        <div style={{ lineHeight: "1rem" }}>
+            <div style={{ fontSize: "1rem", color: "#E2E8F0", marginBottom: "4px" }}>{name}</div>
+            <div style={{ fontSize: "0.875rem", color: "#38BDF8" }}>{title}</div>
+        </div>
+    </div>
+);
+
+
+
+export const FullAuthor = ({ name, title, description, imageSrc }) => (
+    <div
+        style={{
+            display: "flex",
+            width: "100%",
+            borderRadius: "0.5rem",
+            border: "1px solid #374151",
+            backgroundColor: "#1F2937",
+            paddingLeft: "1.5rem",
+            paddingRight: "1.5rem",
+            paddingBottom: "1.5rem",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+    >
+
+    <div>
+        <div style={{ display: "flex", alignItems: "center" }}>
+            <img
+                alt=""
+                fetchpriority="high"
+                width="118"
+                height="118"
+                decoding="async"
+                style={{
+                    marginRight: "0.75rem",
+                    height: "3.5rem",
+                    width: "3.5rem",
+                    borderRadius: "9999px",
+                    color: "transparent",
+                }}
+                src={imageSrc}
+            />
+            <div>
+                <div
+                    style={{
+                        fontSize: "1.25rem",
+                        fontWeight: "500",
+                        color: "#E2E8F0",
+                    }}
+                >
+                    {name}
+                </div>
+                <div
+                    style={{
+                        fontSize: "1rem",
+                        fontWeight: "600",
+                        color: "#38BDF8",
+                    }}
+                >
+                    {title}
+                </div>
+            </div>
+        </div>
+        
+        <div
+            style={{
+                fontSize: "1rem",
+                color: "#E2E8F0",
+            }}
+        >
+            {description}
+        </div>
+    </div>
+</div>
+);

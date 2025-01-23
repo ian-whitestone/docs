@@ -49,21 +49,63 @@
     {
       "group": "Blog",
       "pages": [
-          "posts/overview",
-          {
-            "group": "2025",
-            "pages": ["changelog/lineage-changelog"]
-          },
-          {
-            "group": "2024",
-            "pages": ["changelog/2024-12-16"]
-          }
+          "posts/overview"
+      ]
+    },
+    {
+      "group": "Cost Management",
+      "pages": [
+          "posts/cost-optimization",
+          "posts/snowflake-pricing"
+      ]
+    },
+    {
+      "group": "Snowflake Feature Guides",
+      "pages": [
+          "posts/another",
+          "posts/another",
+          "posts/another",
+          "posts/another"
+      ]
+    },
+    {
+      "group": "Snowflake Best Practices",
+      "pages": [
+        "posts/another",
+        "posts/another",
+        "posts/another",
+        "posts/another"
+      ]
+    },
+    {
+      "group": "Observability",
+      "pages": [
+          "posts/another"
       ]
     }
   ],
   "search": {
     "location": "side"
   },
+  "tabs": [
+    {
+      "name": "Posts",
+      "url": "posts"
+  },
+    {
+        "name": "Features",
+        "url": "https://select.dev"
+    },
+    {
+        "name": "Snowflake Developer Guide",
+        "url": "https://your-website.com/blog"
+    },
+    {
+      "name": "Free Tools",
+      "url": "https://your-website.com/blog",
+      "isDefaultHidden": true
+    }
+],
 
 
 "footer": {
