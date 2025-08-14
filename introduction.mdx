@@ -30,11 +30,11 @@ That's it\!
 <Note>
   **We'd love to chat\!**
 
-  Reach out to our team at any point if you have questions or need help using the chat button in the 
+  Reach out to our team at any point if you have questions or need help using the chat button in the
 
   bottom right. Alternatively, [book a time](https://calendly.com/ian-at-select/30min) with our co-founder & CEO [Ian](https://www.linkedin.com/in/ian-whitestone/).
 
-  `Here is an inline snippet` 
+  `Here is an inline snippet`
 </Note>
 
 <Note>
@@ -45,3 +45,260 @@ That's it\!
   from my_table
   ```
 </Note>
+
+# Really long code block test
+
+```python
+-- Attention users:  Edit variable values up to line 26! Do not change variable names, only change the values to the right of the equals sign.
+SET select_role = 'SELECT_ROLE';
+SET select_warehouse = 'SELECT_WH'; -- you can use an existing warehouse if you'd like.
+SET select_user_name = 'SELECT_USER';
+
+/* 
+SELECT uses a storage integration and a stage to access your Snowflake usage data.
+For more info, see docs:
+https://select.dev/security/model#select-architecture
+
+Also, SELECT uses a stored procedure which tells you avg depth and cluster scores of each table.
+
+If you would like the storage integration, stage, and procudure in an isolated database, type a new database and schema name below.
+If you'd like this in an existing database, type the existing database and schema name.
+
+*/
+
+SET select_database = 'SELECT_DEV';
+SET select_schema = 'UTILS';
+SET storage_integration_name = 'SELECT_STORAGE_INTEGRATION';
+SET describe_object_procedure = 'SPROC_DESCRIBE_OBJECT';
+SET stage_name = 'SELECT_EXPORT';
+
+-- ‼️ edit the public key line below ‼️
+CREATE USER IF NOT EXISTS identifier($select_user_name)
+  RSA_PUBLIC_KEY = '‼️ your public key here‼️ '
+  DEFAULT_ROLE = $select_role
+  DEFAULT_WAREHOUSE = $select_warehouse
+  COMMENT = 'Used by select.dev'
+  type = 'SERVICE';
+
+-- No edits are required below this line.
+--------------------------------------------
+
+-- This is setting the bucket name, which is used in the bucket name for the stage.
+-- CRITICAL: Do not modify this gcs_path variable!! Leave GCS even if you use Azure or AWS.
+-- You do not need to create the bucket, it will be created for you.
+SET gcs_path = (
+  SELECT 
+    'gcs://' || 
+    CASE 
+      WHEN RIGHT(bucket_base, 1) = '_' 
+      THEN LEFT(bucket_base, LENGTH(bucket_base) - 1)
+      ELSE bucket_base
+    END || '/'
+  FROM (
+    SELECT 
+      LEFT(
+        'select_ingest_' || 
+        regexp_replace(lower(CURRENT_ORGANIZATION_NAME() || '_' || CURRENT_ACCOUNT_NAME()), '\\W', '_'),
+        63
+      ) AS bucket_base
+  )
+);
+
+
+USE ROLE ACCOUNTADMIN;
+
+------- create role and warehouse used by SELECT --------------
+CREATE ROLE IF NOT EXISTS identifier($select_role) COMMENT = 'Used by select.dev';
+
+CREATE WAREHOUSE IF NOT EXISTS identifier($select_warehouse)
+  WAREHOUSE_SIZE = XSMALL
+  AUTO_SUSPEND = 60
+  INITIALLY_SUSPENDED = TRUE
+  COMMENT = 'Used by select.dev';
+
+
+GRANT ROLE identifier($select_role) TO USER identifier($select_user_name);
+
+GRANT MONITOR, OPERATE, USAGE, MODIFY
+  ON WAREHOUSE identifier($select_warehouse) TO ROLE identifier($select_role);
+
+-- Grant additional privileges needed by SELECT
+-- Grant read-only access to the Snowflake metadata database
+GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE identifier($select_role);
+-- Grants the ability to monitor account-level usage and historical information for databases and warehouses
+GRANT MONITOR USAGE ON ACCOUNT TO ROLE identifier($select_role);
+-- Grant the ability ability to monitor warehouse settings through the manage warehouses permission
+-- This permission is also required for SELECT to retrieve query statistics using get_query_operator_stats, and for the Automated Savings feature
+GRANT MANAGE WAREHOUSES ON ACCOUNT TO ROLE identifier($select_role); 
+
+-------- Create DB and schema to house SELECT objects --------------
+CREATE DATABASE IF NOT EXISTS identifier($select_database);
+GRANT USAGE ON DATABASE identifier($select_database) TO ROLE identifier($select_role);
+
+USE DATABASE identifier($select_database);
+
+CREATE SCHEMA IF NOT EXISTS identifier($select_schema);
+
+GRANT USAGE ON SCHEMA identifier($select_schema) TO ROLE identifier($select_role);
+
+USE SCHEMA identifier($select_schema);
+
+-- Create the GCS storage integration
+-- Do not change to AWS or Azure, SELECT's Snowflake account is in GCS and this enables copying data to SELECT's account
+CREATE STORAGE INTEGRATION IF NOT EXISTS identifier($storage_integration_name)
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = 'GCS' -- do not change!
+  ENABLED = TRUE
+  STORAGE_ALLOWED_LOCATIONS = ($gcs_path); -- the storage integration will only be used for the dedicated GCS bucket created on your behalf
+
+GRANT USAGE ON INTEGRATION identifier($storage_integration_name) TO ROLE identifier($select_role);
+
+--Create stage
+CREATE OR REPLACE STAGE identifier($stage_name)
+  URL = $gcs_path
+  STORAGE_INTEGRATION = $storage_integration_name;
+
+GRANT USAGE ON STAGE identifier($stage_name) TO ROLE identifier($select_role);
+
+-- The stored procedure below used to analyze clustering statistics for your table
+-- It is optional, but helpful to have
+CREATE OR REPLACE PROCEDURE identifier($describe_object_procedure) (
+        object_type varchar, -- Generic, so SELECT can describe tables, dynamic tables and materialized views
+        object_fqn varchar, -- The full path of the object to be described (database_name.schema_name.object_name)
+        run_describe_object boolean, -- Whether to call "describe table" or not
+        add_clustering_information boolean, -- Whether to include clustering information in the results or not
+        columns_filter_clustering_information array -- Sometimes SELECT only needs clustering information on certain columns
+    )
+    RETURNS variant
+    LANGUAGE javascript
+    EXECUTE AS OWNER
+AS
+$$
+    /**
+    * Function to call "describe table" and parse the results.
+    */
+    function describeObject(objectType, objectFqn) {
+        const sql = `describe ${objectType} ${objectFqn}`
+
+        const statement = snowflake.createStatement({ sqlText: sql })
+        const resultSet = statement.execute()
+
+        const columnsInResult = []
+        for (let columnIndex = 0; columnIndex < statement.getColumnCount(); columnIndex++) {
+            columnsInResult.push(statement.getColumnName(columnIndex + 1)) // Starts from 1
+        }
+
+        const output = [];
+
+        for (let rowIndex = 0; resultSet.next(); rowIndex++) {
+            let row = { _index: rowIndex }
+            columnsInResult.forEach(column => row[column] = resultSet.getColumnValue(column))
+            output.push(row)
+        }
+
+        return output
+    }
+
+    /**
+    * Function to call "system$clustering_information" and parse the results.
+    * Snowflake requires one call per column, but we combine all calls into one SQL statement
+    * using UNION ALL.
+    */
+    function extendColumnsWithClusteringInformation(tableFqn, columns, runDescribeObject, columnsFilterClusteringInformation) {
+        let filteredColumns
+
+        if (runDescribeObject) { // If describe object has been called
+            // Filter out unsupported column types (causes errors on Snowflake)
+            filteredColumns = columns.filter(column => !['OBJECT', 'VARIANT', 'ARRAY'].includes(column.type))
+
+            // If a list of columns to filter on is provided, use it
+            if (columnsFilterClusteringInformation)
+                filteredColumns = filteredColumns.filter(column => columnsFilterClusteringInformation.includes(column.name))
+        } else { // If describe object hasn't been called, use the columns provided in the filter
+            // Convert it to the expected format
+            filteredColumns = columnsFilterClusteringInformation.map(columnName => ({ name: columnName }))
+        }
+
+        if (!filteredColumns.length) return
+
+        const sql = filteredColumns.map(column =>
+            `select ${column?._index || 0} as column_index, '${column.name}' as column_name, system$clustering_information('${tableFqn}', '("${column.name}")') as clustering_information`
+        ).join("\nunion all\n")
+        const resultSet = snowflake.execute({ sqlText: sql })
+
+        while (resultSet.next()) {
+            let colIndex = resultSet.getColumnValue(1)
+            let clusteringInformation = JSON.parse(resultSet.getColumnValue(3))
+
+            if (runDescribeObject) { // If there's already data available from describe object, extend it
+                columns[colIndex] = { ...columns[colIndex], clustering_information: clusteringInformation }
+            } else { // Otherwise, append to the array
+                columns.push({ clustering_information: clusteringInformation })
+            }
+
+        }
+    }
+
+    /**
+    * Function to call "system$clustering_information" without any expression, which defaults
+    * to the existing clustering key if it's defined in the table.
+    */
+    function fetchClusteringKeyInformation(tableFqn) {
+        try {
+            const resultSet = snowflake.execute({ sqlText: `select system$clustering_information('${tableFqn}')` })
+            resultSet.next()
+            return JSON.parse(resultSet.getColumnValue(1))
+        } catch (err)  {
+            // "Invalid clustering keys or table ... is not clustered"
+            return null;
+        }
+    }
+
+    let columns = null
+    let clusteringKeyClusteringInformation = null
+
+    if (RUN_DESCRIBE_OBJECT) {
+        columns = describeObject(OBJECT_TYPE, OBJECT_FQN)
+
+        // If the ADD_CLUSTERING_INFORMATION argument is true, append the output with
+        // the results from system$clustering_information
+        if (ADD_CLUSTERING_INFORMATION) {
+            extendColumnsWithClusteringInformation(OBJECT_FQN, columns, true, COLUMNS_FILTER_CLUSTERING_INFORMATION)
+            clusteringKeyClusteringInformation = fetchClusteringKeyInformation(OBJECT_FQN)
+        }
+    } else if (ADD_CLUSTERING_INFORMATION && COLUMNS_FILTER_CLUSTERING_INFORMATION) {
+        // If only one column is passed as a filter and it is an empty string, fetch clustering data about
+        // the clustering key
+        if (COLUMNS_FILTER_CLUSTERING_INFORMATION?.length === 1 && COLUMNS_FILTER_CLUSTERING_INFORMATION[0] === '') {
+            clusteringKeyClusteringInformation = fetchClusteringKeyInformation(OBJECT_FQN)
+        } else {
+            columns = []
+            extendColumnsWithClusteringInformation(OBJECT_FQN, columns, false, COLUMNS_FILTER_CLUSTERING_INFORMATION)
+        }
+    }
+
+    return { clusteringKey: clusteringKeyClusteringInformation, columns: columns, version: 'v1' }
+$$;
+
+
+-- Grant the procedure to the role used by SELECT
+SET full_proc = $select_database || '.' || $select_schema || '.' || $describe_object_procedure;
+SET grant_sql = 'GRANT USAGE ON PROCEDURE ' || $full_proc || '(VARCHAR, VARCHAR, BOOLEAN, BOOLEAN, ARRAY) TO ROLE ' || $select_role;
+select $grant_sql; -- optional, just so you can see what it will do.
+EXECUTE IMMEDIATE $grant_sql;
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+--------------- END OF SCRIPT ---------------------------------------
+
+
+-- Run the select statment below to assist in filling out the connect account form in the SELECT UI:
+
+SELECT {
+    'account_identifier': CURRENT_ORGANIZATION_NAME() || '-' || CURRENT_ACCOUNT_NAME(),
+    'user': $select_user_name,
+    'stage_name': $select_database || '.' || $select_schema || '.' || $stage_name,
+    'procedure_name': $full_proc
+} as select_form_data;
+```
